@@ -47,6 +47,11 @@ export class MoveService {
     return move;
   }
 
+  /**
+   * To check if move is valid by compairing with the moves in the list
+   * @param currentGame currently running game from session
+   * @returns list of all moves played in the game
+   */
   async getMovesInGame(currentGame: Game): Promise<MoveDto[]> {
     if (!currentGame) throw new BadRequestException('Game not found.');
 
@@ -89,6 +94,9 @@ export class MoveService {
     return this.moveRepository.count({ game: currentGame, user: currentUser });
   }
 
+  /**
+   * @return true or false depending on the count of the user's moves
+   */
   async isUserTurn(currentGame: Game): Promise<boolean> {
     if (!currentGame) throw new BadRequestException('Game not found.');
 
@@ -153,6 +161,10 @@ export class MoveService {
     return game;
   }
 
+  /**
+   * Stores list of winning positions.
+   * @return the list of the winning position's indexes.
+   */
   private static getWinningPositions(): MovePosition[][] {
     const winningPositions: MovePosition[][] = [
       [new MovePosition(1, 1), new MovePosition(2, 2), new MovePosition(3, 3)],
@@ -168,6 +180,11 @@ export class MoveService {
     return winningPositions;
   }
 
+  /**
+   * Checks if the user wins the game
+   * @param positions - Positions of user moves retrieved from database
+   * @return true or false depending on the user is a winner
+   */
   private static isWinner(positions: MovePosition[]): boolean {
     const winningPosition = this.getWinningPositions().find(
       (e) => e === positions,
