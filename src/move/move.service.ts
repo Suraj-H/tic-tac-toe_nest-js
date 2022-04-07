@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Game } from '../game/game.entity';
@@ -25,21 +29,56 @@ export class MoveService {
     if (!currentGame) throw new NotFoundException('Game not found.');
     if (!currentUser) throw new NotFoundException('User not found.');
 
+    const game = await this.gameRepository.findOne({ id: currentGame.id });
+
     const { position } = createMoveDto;
 
     let move = this.moveRepository.create();
     move.position = position;
     move.created = new Date();
     move.user = currentUser;
-    move.game = currentGame;
+
+    move.game = game;
+
+    await this.validateMove(move);
 
     move = await this.moveRepository.save(move);
 
-    const currentGameStatus = await this.getCurrentGameStatus(currentGame.id);
-    this.updateGameStatus(currentGame, currentGameStatus);
+    const currentGameStatus = await this.getCurrentGameStatus(game.id);
+    this.updateGameStatus(game, currentGameStatus);
+
     move.game.gameStatus = currentGameStatus;
 
     return move;
+  }
+
+  private async validateMove(move: Move): Promise<void> {
+    const currentGame = await this.gameRepository.findOne(move.game.id, {
+      relations: ['userOne', 'userTwo'],
+    });
+
+    if (!currentGame) throw new NotFoundException(`Game not found.`);
+
+    if (!currentGame.userOne || !currentGame.userTwo)
+      throw new BadRequestException(
+        `Game required two users to start the game.`,
+      );
+
+    const userOneMoveCount = await this.moveRepository.count({
+      game: currentGame,
+      user: currentGame.userOne,
+    });
+
+    if (!userOneMoveCount && currentGame.userOne.id !== move.user.id)
+      throw new BadRequestException(`User one should start the game.`);
+
+    if (currentGame.gameStatus !== GameStatus.IN_PROGRESS)
+      throw new BadRequestException(`Game is already over.`);
+
+    const currentMovePosition = move.position;
+    const movePositions = await this.getTakenMovePositionInGame(currentGame);
+    if (movePositions.find((e) => e === currentMovePosition))
+      throw new BadRequestException(`Position already taken.`);
   }
 
   async getCurrentGameStatus(id: number) {
@@ -151,31 +190,29 @@ export class MoveService {
     return moves.map((move) => move.position);
   }
 
-  private getNumberOfUserMovesInGame(
-    currentGame: Game,
-    currentUser: User,
-  ): Promise<number> {
-    if (!currentGame) throw new NotFoundException('Game not found.');
-    if (!currentUser) throw new NotFoundException('User not found.');
-
-    return this.moveRepository.count({ game: currentGame, user: currentUser });
-  }
-
   /**
    * @return true or false depending on the count of the user's moves
    */
   async isUserTurn(currentGame: Game): Promise<boolean> {
     if (!currentGame) throw new NotFoundException('Game not found.');
 
-    const { userOne, userTwo } = currentGame;
-    const userOneNumberOfMovesInGame = await this.getNumberOfUserMovesInGame(
-      currentGame,
-      userOne,
-    );
-    const userTwoNumberOfMovesInGame = await this.getNumberOfUserMovesInGame(
-      currentGame,
-      userTwo,
-    );
+    const game = await this.gameRepository.findOne(currentGame.id, {
+      relations: ['userOne', 'userTwo'],
+    });
+
+    if (!game) throw new NotFoundException('Game not found.');
+
+    const { userOne, userTwo } = game;
+
+    const userOneNumberOfMovesInGame = await this.moveRepository.count({
+      game: game,
+      user: userOne,
+    });
+
+    const userTwoNumberOfMovesInGame = await this.moveRepository.count({
+      game: game,
+      user: userTwo,
+    });
 
     return (
       userOneNumberOfMovesInGame === userTwoNumberOfMovesInGame ||
@@ -190,6 +227,9 @@ export class MoveService {
     if (!currentGame) throw new NotFoundException('Game not found.');
 
     const game = await this.gameRepository.findOne(currentGame.id);
+
+    if (!game) throw new NotFoundException('Game not found.');
+
     game.gameStatus = gameStatus;
     return this.gameRepository.save(game);
   }

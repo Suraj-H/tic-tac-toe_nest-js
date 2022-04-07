@@ -1,4 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Move } from '../move/move.entity';
 import { User } from '../user/user.entity';
 import { GameStatus } from './types/game-status.enum';
@@ -37,5 +43,6 @@ export class Game {
   })
   userOnePieceCode: PieceCode;
 
+  @OneToMany(() => Move, (move) => move.game)
   moves: Move[];
 }
