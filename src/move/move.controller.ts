@@ -9,7 +9,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { session } from 'passport';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../user/user.entity';
 import { CreateMoveDto } from './dtos/create-move.dto';
@@ -45,10 +44,7 @@ export class MoveController {
   }
 
   @Get('check')
-  validMoves(
-    @Session() session,
-    @CurrentUser() user: User,
-  ): Promise<MovePosition[]> {
+  validMoves(@Session() session, @CurrentUser() user: User): Promise<number[]> {
     const game = session.currentGame;
 
     return this.moveService.getUserMovePositionsInGame(game, user);

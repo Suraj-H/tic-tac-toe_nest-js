@@ -14,10 +14,7 @@ export class Move {
   game: Game;
 
   @Column()
-  boardRow: number;
-
-  @Column()
-  boardColumn: number;
+  position: number;
 
   @Column({ type: 'timestamp', nullable: true })
   created: Date;
