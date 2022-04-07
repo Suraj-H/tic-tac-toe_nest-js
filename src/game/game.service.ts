@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { getRepository, Repository } from 'typeorm';
 import { User } from '../user/user.entity';
 import { Game } from './game.entity';
 import { GameStatus } from './types/game-status.enum';
@@ -30,17 +30,20 @@ export class GameService {
     return this.gameRepository.save(game);
   }
 
-  async getGameToJoin(currentUser: User): Promise<Game[] | null> {
+  async getGamesToJoin(currentUser: User): Promise<Game[] | null> {
     if (!currentUser) throw new BadRequestException('User not found.');
 
-    let games = await this.gameRepository.find({
-      gameStatus: GameStatus.WAITS_FOR_USER,
-      gameType: GameType.COMPETITION,
-    });
+    const games = await this.gameRepository
+      .createQueryBuilder('game')
+      .leftJoinAndSelect('game.userOne', 'userOne')
+      .where('game.gameStatus = :gameStatus', {
+        gameStatus: GameStatus.WAITS_FOR_USER,
+      })
+      .andWhere('game.gameType = :gameType', { gameType: GameType.COMPETITION })
+      .andWhere('game.userOne.id != :userOneId', { userOneId: currentUser.id })
+      .getMany();
 
-    if (!games) return null;
-
-    return games.filter((game) => game.userOne !== currentUser);
+    return !games ? null : games;
   }
 
   async joinGame(currentUser: User, id: number): Promise<Game> {

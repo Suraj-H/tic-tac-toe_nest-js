@@ -35,7 +35,7 @@ export class GameController {
 
   @Get('list')
   getGameList(@CurrentUser() user: User): Promise<Game[]> {
-    return this.gameService.getGameToJoin(user);
+    return this.gameService.getGamesToJoin(user);
   }
 
   @Patch(':id/join')
