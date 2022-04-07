@@ -1,4 +1,5 @@
 import {
+  BadGatewayException,
   BadRequestException,
   Injectable,
   NotFoundException,
@@ -53,10 +54,13 @@ export class GameService {
       relations: ['userOne'],
     });
 
-    if (!game) throw new NotFoundException(`Game with id#${id} not found.`);
+    if (!game) throw new NotFoundException(`Game with id #${id} not found.`);
 
     if (game.gameStatus !== GameStatus.WAITS_FOR_USER)
       throw new BadRequestException(`Game is already finished.`);
+
+    if (game.userOne.id === currentUser.id)
+      throw new BadGatewayException(`You can't join your own game.`);
 
     game.userTwo = currentUser;
     game.gameStatus = GameStatus.IN_PROGRESS;
