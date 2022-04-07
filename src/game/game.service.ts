@@ -66,4 +66,15 @@ export class GameService {
 
     return this.gameRepository.save(game);
   }
+
+  getUserGames(currentUser: User): Promise<Game[] | null> {
+    if (!currentUser) throw new NotFoundException('User not found.');
+
+    return this.gameRepository
+      .createQueryBuilder('game')
+      .leftJoinAndSelect('game.userOne', 'userOne')
+      .leftJoinAndSelect('game.userTwo', 'userTwo')
+      .where('game.userOne.id = :userOneId', { userOneId: currentUser.id })
+      .getMany();
+  }
 }

@@ -49,4 +49,9 @@ export class GameController {
 
     return game;
   }
+
+  @Get('user/list')
+  getUserGames(@CurrentUser() user: User): Promise<Game[]> {
+    return this.gameService.getUserGames(user);
+  }
 }
