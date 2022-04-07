@@ -1,11 +1,10 @@
 import {
-  BadGatewayException,
   BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getRepository, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User } from '../user/user.entity';
 import { Game } from './game.entity';
 import { GameStatus } from './types/game-status.enum';
@@ -60,7 +59,7 @@ export class GameService {
       throw new BadRequestException(`Game is already finished.`);
 
     if (game.userOne.id === currentUser.id)
-      throw new BadGatewayException(`You can't join your own game.`);
+      throw new BadRequestException(`You can't join your own game.`);
 
     game.userTwo = currentUser;
     game.gameStatus = GameStatus.IN_PROGRESS;
