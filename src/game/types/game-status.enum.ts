@@ -1,0 +1,8 @@
+export enum GameStatus {
+  IN_PROGRESS = 1,
+  DRAW,
+  USER_ONE_WINS,
+  USER_TWO_WINS,
+  COMPLETED,
+  WAITS_FOR_USER,
+}
