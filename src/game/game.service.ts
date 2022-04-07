@@ -18,7 +18,7 @@ export class GameService {
   ) {}
 
   createGame(currentUser: User): Promise<Game> {
-    if (!currentUser) throw new BadRequestException('User not found.');
+    if (!currentUser) throw new NotFoundException('User not found.');
 
     const game = this.gameRepository.create();
     game.userOne = currentUser;
@@ -31,7 +31,7 @@ export class GameService {
   }
 
   async getGamesToJoin(currentUser: User): Promise<Game[] | null> {
-    if (!currentUser) throw new BadRequestException('User not found.');
+    if (!currentUser) throw new NotFoundException('User not found.');
 
     const games = await this.gameRepository
       .createQueryBuilder('game')
@@ -47,7 +47,7 @@ export class GameService {
   }
 
   async joinGame(currentUser: User, id: number): Promise<Game> {
-    if (!currentUser) throw new BadRequestException('User not found.');
+    if (!currentUser) throw new NotFoundException('User not found.');
 
     const game = await this.gameRepository.findOne(id, {
       relations: ['userOne'],
