@@ -59,11 +59,16 @@ export class GameService {
 
     if (!game) throw new NotFoundException(`Game with id #${id} not found.`);
 
-    if (game.gameStatus !== GameStatus.WAITS_FOR_USER)
-      throw new BadRequestException(`Game is already finished.`);
-
     if (game.userOne.id === currentUser.id)
       throw new BadRequestException(`You can't join your own game.`);
+
+    if (game.gameStatus === GameStatus.IN_PROGRESS)
+      throw new BadRequestException(
+        `Game with id #${id} is already in progress.`,
+      );
+
+    if (game.gameStatus !== GameStatus.WAITS_FOR_USER)
+      throw new BadRequestException(`Game is already finished.`);
 
     game.userTwo = currentUser;
     game.gameStatus = GameStatus.IN_PROGRESS;
