@@ -51,10 +51,10 @@ export class MoveController {
     return this.moveService.getUserMovePositionsInGame(game, user);
   }
 
-  @Get('turn')
-  userTurn(@Session() session): Promise<boolean> {
-    const game = session.currentGame;
+  // @Get('turn')
+  // userTurn(@Session() session): Promise<boolean> {
+  //   const game = session.currentGame;
 
-    return this.moveService.isUserTurn(game);
-  }
+  //   return this.moveService.isUserTurn(game);
+  // }
 }

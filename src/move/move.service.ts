@@ -75,8 +75,12 @@ export class MoveService {
     if (currentGame.gameStatus !== GameStatus.IN_PROGRESS)
       throw new BadRequestException(`Game is already over.`);
 
+    if (await this.isUserTurn(move, currentGame))
+      throw new BadRequestException(`It's not your turn.`);
+
     const currentMovePosition = move.position;
     const movePositions = await this.getTakenMovePositionInGame(currentGame);
+
     if (movePositions.find((e) => e === currentMovePosition))
       throw new BadRequestException(`Position already taken.`);
   }
@@ -193,31 +197,17 @@ export class MoveService {
   /**
    * @return true or false depending on the count of the user's moves
    */
-  async isUserTurn(currentGame: Game): Promise<boolean> {
+  async isUserTurn(move: Move, currentGame: Game): Promise<boolean> {
+    if (!move) throw new NotFoundException('Move not found.');
     if (!currentGame) throw new NotFoundException('Game not found.');
 
-    const game = await this.gameRepository.findOne(currentGame.id, {
-      relations: ['userOne', 'userTwo'],
-    });
+    const moves = await this.moveRepository
+      .createQueryBuilder('move')
+      .leftJoinAndSelect('move.user', 'user')
+      .where('move.game.id = :gameId', { gameId: currentGame.id })
+      .getMany();
 
-    if (!game) throw new NotFoundException('Game not found.');
-
-    const { userOne, userTwo } = game;
-
-    const userOneNumberOfMovesInGame = await this.moveRepository.count({
-      game: game,
-      user: userOne,
-    });
-
-    const userTwoNumberOfMovesInGame = await this.moveRepository.count({
-      game: game,
-      user: userTwo,
-    });
-
-    return (
-      userOneNumberOfMovesInGame === userTwoNumberOfMovesInGame ||
-      userOneNumberOfMovesInGame === 0
-    );
+    return moves.length && moves[moves.length - 1].user.id === move.user.id;
   }
 
   async updateGameStatus(
