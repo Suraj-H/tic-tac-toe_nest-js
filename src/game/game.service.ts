@@ -82,6 +82,7 @@ export class GameService {
       .leftJoinAndSelect('game.userOne', 'userOne')
       .leftJoinAndSelect('game.userTwo', 'userTwo')
       .where('game.userOne.id = :userOneId', { userOneId: currentUser.id })
+      .orWhere('game.userTwo.id = :userTwoId', { userTwoId: currentUser.id })
       .getMany();
   }
 
