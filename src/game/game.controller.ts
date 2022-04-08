@@ -2,6 +2,7 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -55,5 +56,14 @@ export class GameController {
   @Get('user/list')
   getUserGames(@CurrentUser() user: User): Promise<Game[]> {
     return this.gameService.getUserGames(user);
+  }
+
+  @Patch('leave')
+  async leaveGame(@CurrentUser() user: User, @Session() session) {
+    let game = session.currentGame;
+    game = this.gameService.leaveGame(user, game);
+    session.currentGame = null;
+
+    return game;
   }
 }

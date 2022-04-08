@@ -57,15 +57,13 @@ export class GameService {
       relations: ['userOne'],
     });
 
-    if (!game) throw new NotFoundException(`Game with id #${id} not found.`);
+    if (!game) throw new NotFoundException(`Game with not found.`);
 
     if (game.userOne.id === currentUser.id)
       throw new BadRequestException(`You can't join your own game.`);
 
     if (game.gameStatus === GameStatus.IN_PROGRESS)
-      throw new BadRequestException(
-        `Game with id #${id} is already in progress.`,
-      );
+      throw new BadRequestException(`Game is already in progress.`);
 
     if (game.gameStatus !== GameStatus.WAITS_FOR_USER)
       throw new BadRequestException(`Game is already finished.`);
@@ -85,6 +83,23 @@ export class GameService {
       .leftJoinAndSelect('game.userTwo', 'userTwo')
       .where('game.userOne.id = :userOneId', { userOneId: currentUser.id })
       .getMany();
+  }
+
+  leaveGame(currentUser: User, currentGame: Game): Promise<Game> {
+    if (!currentUser) throw new NotFoundException('User not found.');
+
+    if (!currentGame) throw new NotFoundException('Game not found.');
+
+    if (
+      currentGame.userOne.id !== currentUser.id &&
+      currentGame.userTwo.id !== currentUser.id
+    )
+      throw new BadRequestException(`You can't leave this game.`);
+
+    currentGame.gameStatus = GameStatus.ABORTED;
+    currentGame.endedAt = new Date();
+
+    return this.gameRepository.save(currentGame);
   }
 
   private getSlug(user: User): string {
