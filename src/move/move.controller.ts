@@ -21,7 +21,7 @@ import { MovePosition } from './types/move-position';
 
 @UseInterceptors(ClassSerializerInterceptor, WrapResponseInterceptor)
 @UseGuards(AuthGuard('jwt'))
-@Controller('move')
+@Controller('game/move')
 export class MoveController {
   constructor(private readonly moveService: MoveService) {}
 
