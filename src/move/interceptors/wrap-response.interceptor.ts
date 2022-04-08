@@ -13,19 +13,19 @@ import { MoveDto } from '../dtos/move.dto';
 export class WrapResponseInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
-      map((data) => {
-        const moveDto = plainToClass(MoveDto, data);
+      map((move) => {
+        const moveDto = plainToClass(MoveDto, move);
         if (moveDto.game.gameStatus === GameStatus.USER_ONE_WINS)
-          return { message: 'User One Wins', data: moveDto };
+          return { message: 'User One Wins', move: moveDto };
 
         if (moveDto.game.gameStatus === GameStatus.USER_TWO_WINS)
-          return { message: 'User Two Wins', data: moveDto };
+          return { message: 'User Two Wins', move: moveDto };
 
         if (moveDto.game.gameStatus === GameStatus.DRAW)
-          return { message: 'Draw', data: moveDto };
+          return { message: 'Draw', move: moveDto };
 
         return {
-          data,
+          move: move,
         };
       }),
     );
