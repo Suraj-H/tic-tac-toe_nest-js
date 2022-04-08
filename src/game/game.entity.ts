@@ -22,8 +22,11 @@ export class Game {
   @ManyToOne(() => User, (user) => user.games)
   userTwo: User;
 
-  @Column({ type: 'timestamp', nullable: true })
-  created: Date;
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  endedAt: Date;
 
   @Column('enum', {
     enum: GameStatus,
@@ -39,7 +42,7 @@ export class Game {
 
   @Column('enum', {
     enum: PieceCode,
-    nullable: true,
+    default: PieceCode.O,
   })
   userOnePieceCode: PieceCode;
 
