@@ -24,8 +24,7 @@ export class GameService {
     game.userOne = currentUser;
     game.gameStatus = GameStatus.WAITS_FOR_USER;
     game.gameType = GameType.COMPETITION;
-    game.userOnePieceCode = PieceCode.X;
-    game.created = new Date();
+    game.userOnePieceCode = PieceCode.O;
 
     return this.gameRepository.save(game);
   }
@@ -70,6 +69,22 @@ export class GameService {
     game.gameStatus = GameStatus.IN_PROGRESS;
 
     return this.gameRepository.save(game);
+  }
+
+  leaveGame(currentUser: User, currentGame: Game): Promise<Game> {
+    if (!currentUser) throw new NotFoundException('User not found.');
+    if (!currentGame) throw new NotFoundException('Game not found.');
+
+    if (
+      currentGame.userOne.id !== currentUser.id &&
+      currentGame.userTwo.id !== currentUser.id
+    )
+      throw new BadRequestException(`You can't leave this game.`);
+
+    currentGame.gameStatus = GameStatus.ABORTED;
+    currentGame.endedAt = new Date();
+
+    return this.gameRepository.save(currentGame);
   }
 
   getUserGames(currentUser: User): Promise<Game[] | null> {
