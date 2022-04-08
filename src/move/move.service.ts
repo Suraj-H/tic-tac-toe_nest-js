@@ -75,11 +75,11 @@ export class MoveService {
     if (currentGame.gameStatus !== GameStatus.IN_PROGRESS)
       throw new BadRequestException(`Game is already over.`);
 
-    const moves = await this.moveRepository
-      .createQueryBuilder('move')
-      .leftJoinAndSelect('move.user', 'user')
-      .where('move.game.id = :gameId', { gameId: currentGame.id })
-      .getMany();
+    const moves = await this.moveRepository.find({
+      order: { id: 'ASC' },
+      where: { game: currentGame.id },
+      relations: ['user'],
+    });
 
     if (moves.length && moves[moves.length - 1].user.id === move.user.id)
       throw new BadRequestException(`It's not your turn.`);
