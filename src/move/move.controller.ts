@@ -13,12 +13,13 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../user/user.entity';
 import { CreateMoveDto } from './dtos/create-move.dto';
 import { MoveDto } from './dtos/move.dto';
+import { WrapResponseInterceptor } from './interceptors/wrap-response.interceptor';
 import { Move } from './move.entity';
 import { MoveService } from './move.service';
 import { CreateMoveValidationPipe } from './pipes/create-move-validation.pipe';
 import { MovePosition } from './types/move-position';
 
-@UseInterceptors(ClassSerializerInterceptor)
+@UseInterceptors(ClassSerializerInterceptor, WrapResponseInterceptor)
 @UseGuards(AuthGuard('jwt'))
 @Controller('move')
 export class MoveController {
