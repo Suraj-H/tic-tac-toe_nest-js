@@ -26,7 +26,7 @@ export class MoveController {
   constructor(private readonly moveService: MoveService) {}
 
   @Post('create')
-  createMove(
+  async createMove(
     @CurrentUser() user: User,
     @Body(CreateMoveValidationPipe)
     createMoveDto: CreateMoveDto,
@@ -34,7 +34,10 @@ export class MoveController {
   ): Promise<Move> {
     const game = session.currentGame;
 
-    return this.moveService.createMove(user, game, createMoveDto);
+    const move = await this.moveService.createMove(user, game, createMoveDto);
+    session.currentGame = move.game;
+
+    return move;
   }
 
   @Get('list')
