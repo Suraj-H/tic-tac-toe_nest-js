@@ -15,7 +15,7 @@ import { UserModule } from './user/user.module';
       port: 5432,
       username: 'postgres',
       password: '12345',
-      database: 'tic-tac-toe',
+      database: 'tic-tac-toe-test',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
