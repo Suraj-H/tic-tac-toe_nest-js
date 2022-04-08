@@ -37,7 +37,7 @@ export class GameController {
     return game;
   }
 
-  @Get('list')
+  @Get('joinlist')
   getGamesToJoinList(@CurrentUser() user: User): Promise<Game[]> {
     return this.gameService.getGamesToJoin(user);
   }
@@ -55,7 +55,7 @@ export class GameController {
     return game;
   }
 
-  @Get('user/list')
+  @Get('list')
   getUserGames(@CurrentUser() user: User): Promise<Game[] | null> {
     return this.gameService.getUserGames(user);
   }
