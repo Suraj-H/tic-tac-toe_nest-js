@@ -1,4 +1,4 @@
 export enum PieceCode {
-  O = 1,
-  X,
+  O = 'O',
+  X = 'X',
 }
