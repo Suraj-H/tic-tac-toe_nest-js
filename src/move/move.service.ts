@@ -37,7 +37,6 @@ export class MoveService {
     move.position = position;
     move.created = new Date();
     move.user = currentUser;
-
     move.game = game;
 
     await this.validateMove(move);
@@ -61,7 +60,7 @@ export class MoveService {
 
     if (!currentGame.userOne || !currentGame.userTwo)
       throw new BadRequestException(
-        `Game required two users to start the game.`,
+        `Game required two users to play the game.`,
       );
 
     const userOneMoveCount = await this.moveRepository.count({
@@ -71,6 +70,9 @@ export class MoveService {
 
     if (!userOneMoveCount && currentGame.userOne.id !== move.user.id)
       throw new BadRequestException(`User one should start the game.`);
+
+    if (currentGame.gameStatus === GameStatus.ABORTED)
+      throw new BadRequestException(`Game has been aborted.`);
 
     if (currentGame.gameStatus !== GameStatus.IN_PROGRESS)
       throw new BadRequestException(`Game is already over.`);
