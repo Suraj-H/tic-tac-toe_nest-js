@@ -1,4 +1,4 @@
 export enum GameType {
-  COMPUTER = 1,
-  COMPETITION,
+  COMPUTER = 'COMPUTER',
+  COMPETITION = 'COMPETITION',
 }
