@@ -10,6 +10,8 @@ import { Game } from './game.entity';
 import { GameStatus } from './types/game-status.enum';
 import { GameType } from './types/game-type.enum';
 import { PieceCode } from './types/piece-code.enum';
+import slugify from 'slugify';
+import { CreateGameDto } from './dtos/create-game.dto';
 
 @Injectable()
 export class GameService {
@@ -17,15 +19,17 @@ export class GameService {
     @InjectRepository(Game) private readonly gameRepository: Repository<Game>,
   ) {}
 
-  createGame(currentUser: User): Promise<Game> {
+  createGame(currentUser: User, createGameDto: CreateGameDto): Promise<Game> {
     if (!currentUser) throw new NotFoundException('User not found.');
+
+    const { gameType, userOnePieceCode } = createGameDto;
 
     const game = this.gameRepository.create();
     game.userOne = currentUser;
     game.gameStatus = GameStatus.WAITS_FOR_USER;
-    game.gameType = GameType.COMPETITION;
-    game.userOnePieceCode = PieceCode.X;
-    game.created = new Date();
+    game.gameType = gameType;
+    game.userOnePieceCode = userOnePieceCode;
+    game.slug = this.getSlug(currentUser);
 
     return this.gameRepository.save(game);
   }
@@ -76,5 +80,13 @@ export class GameService {
       .leftJoinAndSelect('game.userTwo', 'userTwo')
       .where('game.userOne.id = :userOneId', { userOneId: currentUser.id })
       .getMany();
+  }
+
+  private getSlug(user: User): string {
+    return slugify(
+      'game' +
+        '-' +
+        ((user.id * Math.random() * Math.pow(36, 6)) | 0).toString(36),
+    );
   }
 }
