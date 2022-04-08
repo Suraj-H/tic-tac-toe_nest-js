@@ -75,7 +75,13 @@ export class MoveService {
     if (currentGame.gameStatus !== GameStatus.IN_PROGRESS)
       throw new BadRequestException(`Game is already over.`);
 
-    if (await this.isUserTurn(move, currentGame))
+    const moves = await this.moveRepository
+      .createQueryBuilder('move')
+      .leftJoinAndSelect('move.user', 'user')
+      .where('move.game.id = :gameId', { gameId: currentGame.id })
+      .getMany();
+
+    if (moves.length && moves[moves.length - 1].user.id === move.user.id)
       throw new BadRequestException(`It's not your turn.`);
 
     const currentMovePosition = move.position;
@@ -192,22 +198,6 @@ export class MoveService {
 
     const moves = await this.moveRepository.find({ game: currentGame });
     return moves.map((move) => move.position);
-  }
-
-  /**
-   * @return true or false depending on the count of the user's moves
-   */
-  async isUserTurn(move: Move, currentGame: Game): Promise<boolean> {
-    if (!move) throw new NotFoundException('Move not found.');
-    if (!currentGame) throw new NotFoundException('Game not found.');
-
-    const moves = await this.moveRepository
-      .createQueryBuilder('move')
-      .leftJoinAndSelect('move.user', 'user')
-      .where('move.game.id = :gameId', { gameId: currentGame.id })
-      .getMany();
-
-    return moves.length && moves[moves.length - 1].user.id === move.user.id;
   }
 
   async updateGameStatus(
