@@ -3,5 +3,6 @@ export enum GameStatus {
   DRAW = 'DRAW',
   USER_ONE_WINS = 'USER_ONE_WINS',
   USER_TWO_WINS = 'USER_TWO_WINS',
+  ABORTED = 'ABORTED',
   WAITS_FOR_USER = 'WAITS_FOR_USER',
 }
