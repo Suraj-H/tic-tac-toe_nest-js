@@ -13,6 +13,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../user/user.entity';
+import { CreateGameDto } from './dtos/create-game.dto';
 import { Game } from './game.entity';
 import { GameService } from './game.service';
 
@@ -26,8 +27,9 @@ export class GameController {
   async createGame(
     @CurrentUser() user: User,
     @Session() session,
+    @Body('game') createGameDto: CreateGameDto,
   ): Promise<Game> {
-    const game = await this.gameService.createGame(user);
+    const game = await this.gameService.createGame(user, createGameDto);
     session.currentGame = game;
 
     return game;
