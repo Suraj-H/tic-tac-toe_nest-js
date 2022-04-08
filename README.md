@@ -6,7 +6,7 @@ Flow to play game:
 - signin user
 - create game (/game/start POST) OR
 - get list of games to join (/game/list GET) AND join game (/game/join PATCH)
-- create move (/move/create POST)
+- create move (/game/move/create POST)
 
 ## Installation
 
