@@ -65,19 +65,22 @@ export class GameService {
   ): Promise<Game> {
     if (!currentUser) throw new NotFoundException('User not found.');
 
+    const game = await this.gameRepository.findOne(id, {
+      relations: ['userOne', 'userTwo'],
+    });
+
+    if (game && game.userOne.id === currentUser.id)
+      throw new BadRequestException(`You can't join your own game.`);
+
+    if (game && game.userTwo && game.userTwo.id === currentUser.id)
+      throw new BadRequestException(`You already joined this game.`);
+
     if (currentGame)
       throw new BadRequestException(
         `You can't join this game, while you are in another game.`,
       );
 
-    const game = await this.gameRepository.findOne(id, {
-      relations: ['userOne'],
-    });
-
     if (!game) throw new NotFoundException(`Game with id #${id} not found.`);
-
-    if (game.userOne.id === currentUser.id)
-      throw new BadRequestException(`You can't join your own game.`);
 
     if (game.gameStatus === GameStatus.IN_PROGRESS)
       throw new BadRequestException(`Game is already in progress.`);
