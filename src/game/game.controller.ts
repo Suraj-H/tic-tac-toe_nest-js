@@ -18,6 +18,7 @@ import { User } from '../user/user.entity';
 import { CreateGameDto } from './dtos/create-game.dto';
 import { Game } from './game.entity';
 import { GameService } from './game.service';
+import { CreateGameValidationPipe } from './pipes/create-game-validation.pipe';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(AuthGuard('jwt'))
@@ -29,7 +30,7 @@ export class GameController {
   async createGame(
     @CurrentUser() user: User,
     @Session() session,
-    @Body('game') createGameDto: CreateGameDto,
+    @Body('game', CreateGameValidationPipe) createGameDto: CreateGameDto,
   ): Promise<Game> {
     let game = session.currentGame;
     game = await this.gameService.createGame(game, user, createGameDto);
