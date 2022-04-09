@@ -4,14 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import slugify from 'slugify';
 import { Repository } from 'typeorm';
 import { User } from '../user/user.entity';
+import { CreateGameDto } from './dtos/create-game.dto';
 import { Game } from './game.entity';
 import { GameStatus } from './types/game-status.enum';
 import { GameType } from './types/game-type.enum';
-import { PieceCode } from './types/piece-code.enum';
-import slugify from 'slugify';
-import { CreateGameDto } from './dtos/create-game.dto';
 
 @Injectable()
 export class GameService {
@@ -75,7 +74,7 @@ export class GameService {
       relations: ['userOne'],
     });
 
-    if (!game) throw new NotFoundException(`Game with not found.`);
+    if (!game) throw new NotFoundException(`Game with id #${id} not found.`);
 
     if (game.userOne.id === currentUser.id)
       throw new BadRequestException(`You can't join your own game.`);
@@ -92,16 +91,27 @@ export class GameService {
     return this.gameRepository.save(game);
   }
 
-  getUserGames(currentUser: User): Promise<Game[] | null> {
+  async getUserGames(currentUser: User, query): Promise<Game[]> {
     if (!currentUser) throw new NotFoundException('User not found.');
 
-    return this.gameRepository
+    const queryBuilder = this.gameRepository
       .createQueryBuilder('game')
       .leftJoinAndSelect('game.userOne', 'userOne')
       .leftJoinAndSelect('game.userTwo', 'userTwo')
       .where('game.userOne.id = :userOneId', { userOneId: currentUser.id })
-      .orWhere('game.userTwo.id = :userTwoId', { userTwoId: currentUser.id })
-      .getMany();
+      .orWhere('game.userTwo.id = :userTwoId', { userTwoId: currentUser.id });
+
+    queryBuilder.orderBy('game.createdAt', 'DESC');
+
+    const gamesCount = await queryBuilder.getCount();
+
+    if (query.limit) queryBuilder.limit(query.limit);
+
+    if (query.offset) queryBuilder.offset(query.offset);
+
+    const games = await queryBuilder.getMany();
+
+    return games;
   }
 
   leaveGame(currentUser: User, currentGame: Game): Promise<Game> {
