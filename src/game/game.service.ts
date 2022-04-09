@@ -42,7 +42,7 @@ export class GameService {
     return this.gameRepository.save(game);
   }
 
-  async getGamesToJoin(currentUser: User): Promise<Game[] | null> {
+  async getGamesToJoin(currentUser: User): Promise<Game[]> {
     if (!currentUser) throw new NotFoundException('User not found.');
 
     const games = await this.gameRepository
@@ -55,7 +55,7 @@ export class GameService {
       .andWhere('game.userOne.id != :userOneId', { userOneId: currentUser.id })
       .getMany();
 
-    return !games ? null : games;
+    return games;
   }
 
   async joinGame(
@@ -140,5 +140,15 @@ export class GameService {
         '-' +
         ((user.id * Math.random() * Math.pow(36, 6)) | 0).toString(36),
     );
+  }
+
+  getGame(id: number): Promise<Game> {
+    const game = this.gameRepository.findOne(id, {
+      relations: ['userOne', 'userTwo'],
+    });
+
+    if (!game) throw new NotFoundException(`Game with id #${id} not found.`);
+
+    return game;
   }
 }

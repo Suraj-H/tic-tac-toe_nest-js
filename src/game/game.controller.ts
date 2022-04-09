@@ -70,4 +70,9 @@ export class GameController {
 
     return game;
   }
+
+  @Get(':id/check')
+  getGame(@Param('id') id: string): Promise<Game> {
+    return this.gameService.getGame(+id);
+  }
 }
