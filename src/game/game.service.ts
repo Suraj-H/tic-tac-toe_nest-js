@@ -17,8 +17,13 @@ export class GameService {
     @InjectRepository(Game) private readonly gameRepository: Repository<Game>,
   ) {}
 
-  createGame(currentUser: User): Promise<Game> {
+  createGame(currentGame: Game, currentUser: User): Promise<Game> {
     if (!currentUser) throw new NotFoundException('User not found.');
+
+    if (currentGame)
+      throw new BadRequestException(
+        `You can't create a game, while you are in another game.`,
+      );
 
     const game = this.gameRepository.create();
     game.userOne = currentUser;
@@ -45,8 +50,17 @@ export class GameService {
     return !games ? null : games;
   }
 
-  async joinGame(currentUser: User, id: number): Promise<Game> {
+  async joinGame(
+    currentGame: Game,
+    currentUser: User,
+    id: number,
+  ): Promise<Game> {
     if (!currentUser) throw new NotFoundException('User not found.');
+
+    if (currentGame)
+      throw new BadRequestException(
+        `You can't join this game, while you are in another game.`,
+      );
 
     const game = await this.gameRepository.findOne(id, {
       relations: ['userOne'],

@@ -26,7 +26,8 @@ export class GameController {
     @CurrentUser() user: User,
     @Session() session,
   ): Promise<Game> {
-    const game = await this.gameService.createGame(user);
+    let game = session.currentGame;
+    game = await this.gameService.createGame(game, user);
     session.currentGame = game;
 
     return game;
@@ -43,7 +44,8 @@ export class GameController {
     @Param('id') id: string,
     @Session() session,
   ): Promise<Game> {
-    const game = await this.gameService.joinGame(user, +id);
+    let game = session.currentGame;
+    game = await this.gameService.joinGame(game, user, +id);
     session.currentGame = game;
 
     return game;
