@@ -1,4 +1,5 @@
 import {
+  Body,
   ClassSerializerInterceptor,
   Controller,
   Get,
@@ -13,6 +14,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../user/user.entity';
+import { CreateGameDto } from './dtos/create-game.dto';
 import { Game } from './game.entity';
 import { GameService } from './game.service';
 
@@ -26,9 +28,10 @@ export class GameController {
   async createGame(
     @CurrentUser() user: User,
     @Session() session,
+    @Body() createGameDto: CreateGameDto,
   ): Promise<Game> {
     let game = session.currentGame;
-    game = await this.gameService.createGame(game, user);
+    game = await this.gameService.createGame(game, user, createGameDto);
     session.currentGame = game;
 
     return game;

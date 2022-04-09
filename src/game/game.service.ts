@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../user/user.entity';
+import { CreateGameDto } from './dtos/create-game.dto';
 import { Game } from './game.entity';
 import { GameStatus } from './types/game-status.enum';
 import { GameType } from './types/game-type.enum';
@@ -17,7 +18,11 @@ export class GameService {
     @InjectRepository(Game) private readonly gameRepository: Repository<Game>,
   ) {}
 
-  createGame(currentGame: Game, currentUser: User): Promise<Game> {
+  createGame(
+    currentGame: Game,
+    currentUser: User,
+    createGameDto: CreateGameDto,
+  ): Promise<Game> {
     if (!currentUser) throw new NotFoundException('User not found.');
 
     if (currentGame)
@@ -25,11 +30,13 @@ export class GameService {
         `You can't create a game, while you are in another game.`,
       );
 
+    const { gameType, userOnePieceCode } = createGameDto;
+
     const game = this.gameRepository.create();
     game.userOne = currentUser;
     game.gameStatus = GameStatus.WAITS_FOR_USER;
-    game.gameType = GameType.COMPETITION;
-    game.userOnePieceCode = PieceCode.O;
+    game.gameType = gameType;
+    game.userOnePieceCode = userOnePieceCode;
 
     return this.gameRepository.save(game);
   }
