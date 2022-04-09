@@ -41,7 +41,7 @@ export class GameService {
     return this.gameRepository.save(game);
   }
 
-  async getGamesToJoin(currentUser: User): Promise<Game[] | null> {
+  async getGamesToJoin(currentUser: User): Promise<Game[]> {
     if (!currentUser) throw new NotFoundException('User not found.');
 
     const games = await this.gameRepository
