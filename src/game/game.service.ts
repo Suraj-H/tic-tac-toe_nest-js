@@ -54,7 +54,7 @@ export class GameService {
       .andWhere('game.userOne.id != :userOneId', { userOneId: currentUser.id })
       .getMany();
 
-    return !games ? null : games;
+    return games;
   }
 
   async joinGame(
