@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Session,
   UseGuards,
   UseInterceptors,
@@ -52,8 +53,8 @@ export class GameController {
   }
 
   @Get('list')
-  getUserGames(@CurrentUser() user: User): Promise<Game[]> {
-    return this.gameService.getUserGames(user);
+  getUserGames(@CurrentUser() user: User, @Query() query): Promise<Game[]> {
+    return this.gameService.getUserGames(user, query);
   }
 
   @Patch('leave')

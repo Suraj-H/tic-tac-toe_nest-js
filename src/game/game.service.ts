@@ -101,14 +101,24 @@ export class GameService {
     return this.gameRepository.save(currentGame);
   }
 
-  getUserGames(currentUser: User): Promise<Game[] | null> {
+  async getUserGames(currentUser: User, query): Promise<Game[]> {
     if (!currentUser) throw new NotFoundException('User not found.');
 
-    return this.gameRepository
+    const queryBuilder = this.gameRepository
       .createQueryBuilder('game')
       .leftJoinAndSelect('game.userOne', 'userOne')
       .leftJoinAndSelect('game.userTwo', 'userTwo')
       .where('game.userOne.id = :userOneId', { userOneId: currentUser.id })
-      .getMany();
+      .orWhere('game.userTwo.id = :userTwoId', { userTwoId: currentUser.id });
+
+    queryBuilder.orderBy('game.createdAt', 'DESC');
+
+    if (query.limit) queryBuilder.limit(query.limit);
+
+    if (query.offset) queryBuilder.offset(query.offset);
+
+    const games = await queryBuilder.getMany();
+
+    return games;
   }
 }
