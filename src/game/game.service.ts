@@ -131,4 +131,14 @@ export class GameService {
 
     return games;
   }
+
+  getGame(id: number): Promise<Game> {
+    const game = this.gameRepository.findOne(id, {
+      relations: ['userOne', 'userTwo'],
+    });
+
+    if (!game) throw new NotFoundException(`Game with id #${id} not found.`);
+
+    return game;
+  }
 }
