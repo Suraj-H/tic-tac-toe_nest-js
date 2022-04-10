@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { User } from '../user/user.entity';
 import { CreateGameDto } from './dtos/create-game.dto';
 import { Game } from './game.entity';
@@ -41,20 +41,17 @@ export class GameService {
     return this.gameRepository.save(game);
   }
 
-  async getGamesToJoin(currentUser: User): Promise<Game[]> {
+  getGamesToJoin(currentUser: User): Promise<Game[]> {
     if (!currentUser) throw new NotFoundException('User not found.');
 
-    const games = await this.gameRepository
-      .createQueryBuilder('game')
-      .leftJoinAndSelect('game.userOne', 'userOne')
-      .where('game.gameStatus = :gameStatus', {
+    return this.gameRepository.find({
+      where: {
         gameStatus: GameStatus.WAITS_FOR_USER,
-      })
-      .andWhere('game.gameType = :gameType', { gameType: GameType.COMPETITION })
-      .andWhere('game.userOne.id != :userOneId', { userOneId: currentUser.id })
-      .getMany();
-
-    return games;
+        gameType: GameType.COMPETITION,
+        userOne: { id: Not(currentUser.id) },
+      },
+      relations: ['userOne'],
+    });
   }
 
   async joinGame(
